@@ -1,4 +1,6 @@
-# Original C++ Version of Crumb Chronicles
+# 🥖 Original C++ Version of Crumb Chronicles
+
+![Crumb Chronicles Screenshot](https://i.imgur.com/N6A7zNG.png)
 
 This folder contains the original text-based implementation of "Interview With A Sentient Toaster" that was created as a C++ console application.
 
