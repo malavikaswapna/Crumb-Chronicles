@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crumb Chronicles - Interview With A Sentient Toaster</title>
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-app-compat.min.js"></script>
+    <!-- Firebase Realtime Database -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-database-compat.min.js"></script>
+    <style>
+        /* General styling */
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #f5f0e1;
+            color: #5d4037;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff6f00;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+        }
+        
+        /* Game container styling */
+        #game-container {
+            background-color: #fff8e1;
+            border: 3px solid #ffcc80;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        #output-container {
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+        }
+        
+        /* Input area styling */
+        #input-container {
+            display: flex;
+            margin-top: 15px;
+        }
+        
+        #user-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 2px solid #ffcc80;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+        }
+        
+        #submit-btn {
+            background-color: #ff6f00;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        
+        #submit-btn:hover {
+            background-color: #ff9800;
+        }
+        
+        /* Choice buttons */
+        .choice-btn {
+            background-color: #ffcc80;
+            color: #5d4037;
+            border: 2px solid #ff9800;
+            border-radius: 5px;
+            padding: 8px 15px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: background-color 0.3s;
+        }
+        
+        .choice-btn:hover {
+            background-color: #ff9800;
+            color: white;
+        }
+        
+        #choices-container {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* ASCII art styling */
+        .ascii-art {
+            font-family: monospace;
+            white-space: pre;
+            line-height: 1.2;
+            margin: 10px 0;
+            color: #ff6f00;
+            text-align: center;
+        }
+        
+        /* Help button */
+        #help-btn {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        #help-btn:hover {
+            background-color: #66bb6a;
+        }
+        
+        /* Achievement styling */
+        .achievement {
+            background-color: #ffd54f;
+            border: 2px dashed #ff6f00;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+            animation: glow 1.5s infinite alternate;
+        }
+        
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 5px #ff6f00;
+            }
+            to {
+                box-shadow: 0 0 15px #ff6f00;
+            }
+        }
+        
+        /* Toast message styling */
+        .toast-message {
+            color: #ff6f00;
+            font-weight: bold;
+        }
+        
+        /* Player message styling */
+        .player-message {
+            color: #1976d2;
+            font-weight: bold;
+        }
+        
+        /* Restart button */
+        #restart-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        #restart-btn:hover {
+            background-color: #e57373;
+        }
+        
+        /* Leaderboard styling */
+        #leaderboard-container {
+            margin-top: 30px;
+            background-color: #fff8e1;
+            border: 3px solid #ffcc80;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        #leaderboard-title {
+            color: #ff6f00;
+            text-align: center;
+            margin-top: 0;
+            border-bottom: 2px dashed #ffcc80;
+            padding-bottom: 10px;
+        }
+        
+        #leaderboard-entries {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .leaderboard-entry {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .entry-name {
+            font-weight: bold;
+            color: #5d4037;
+        }
+        
+        .entry-outcome {
+            color: #ff6f00;
+        }
+        
+        .entry-date {
+            color: #9e9e9e;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>✨ Interview With A Sentient Toaster™ ✨</h1>
+    
+    <button id="help-btn">Need Help?</button>
+    
+    <div id="game-container">
+        <div id="output-container"></div>
+        
+        <div id="choices-container"></div>
+        
+        <div id="input-container">
+            <input type="text" id="user-input" placeholder="Type your response here...">
+            <button id="submit-btn">Submit</button>
+        </div>
+        
+        <button id="restart-btn">Play Again?</button>
+    </div>
+    
+    <div id="leaderboard-container">
+        <h2 id="leaderboard-title">🏆 Crumb Kingdom Leaderboard 🏆</h2>
+        <div id="leaderboard-entries">
+            <!-- Leaderboard entries will be populated here -->
+            <p id="loading-message">Loading the toasty leaderboard...</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyDS8L-OuXZD15T87XJVk9oLyTXCf09ppaQ",
+          authDomain: "crumb-chronicles.firebaseapp.com",
+          databaseURL: "https://crumb-chronicles-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "crumb-chronicles",
+          storageBucket: "crumb-chronicles.firebasestorage.app",
+          messagingSenderId: "87602679321",
+          appId: "1:87602679321:web:e52bfbe765cbc1e7c96488"
+        };
+        
+        // Initialize Firebase - will need to be replaced with actual config when deployed
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // Game variables
+        const outputContainer = document.getElementById('output-container');
+        const userInput = document.getElementById('user-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const helpBtn = document.getElementById('help-btn');
+        const choicesContainer = document.getElementById('choices-container');
+        const restartBtn = document.getElementById('restart-btn');
+        const leaderboardEntries = document.getElementById('leaderboard-entries');
+        
+        let playerName = '';
+        let toasterName = '';
+        let gameState = 'intro';
+        let score = 0;
+        let specialTrigger = false;
+        let specialType = '';
+        
+        // ASCII art collection
+        const asciiArt = {
+            toast: `
+     ________
+    /        \\
+   /  TOAST!  \\
+   \\  ~~~~~~  /
+    \\________/
+    ( )    ( )
+     ||    ||
+     ||    ||
+     ^^    ^^`,
+            
+            avocado: `
+    _________
+   /         \\
+  /  AVOCADO  \\
+  \\   AWAITS   /
+   \\__________/
+       |||
+     __|||__
+    (_______)`,
+            
+            bagel: `
+     .-"""-.
+    /       \\
+   |         |
+   |  BAGEL  |
+   |         |
+    \\       /
+     '-...-'
+       |||
+     __|||__
+    (_______)`,
+            
+            pancake: `
+      _______
+     /       \\
+    /  PANCAKE  \\
+   |  FLUFFY!   |
+   \\___________/
+       ||
+      __||
+     (____)`,
+            
+            butterRealm: `
+    _______________
+   |               |
+   |   BUTTER      |
+   |   REALM       |
+   |_______________|
+        |||
+      __|||__
+     (_______)`,
+            
+            goldenToast: `
+       _________
+      /         \\
+     /  GOLDEN   \\
+    |   TOAST!   |
+    |   PERFECT  |
+     \\___________/
+        |||
+      __|||__
+     (_______)`,
+            
+            crust: `
+      ________
+     /        \\
+    /  CRUST!  \\
+    \\  KINGDOM /
+     \\________/
+        |||
+      __|||__
+     (_______)`,
+        };
+        
+        // Toaster names
+        const toasterNames = [
+            "Crumbsworth the Third", 
+            "Toastifer", 
+            "Sir Sizzle",
+            "Burnadette", 
+            "Crustina", 
+            "The Bread Baron",
+            "Toasty McToastface"
+        ];
+        
+        // Questions and answers
+        const questions = [
+            {
+                question: "What is your greatest strength?",
+                options: [
+                    { key: 'a', text: "I never burn under pressure." },
+                    { key: 'b', text: "I'm great at loafing around." },
+                    { key: 'c', text: "I talk to appliances daily." }
+                ],
+                correctKey: 'a'
+            },
+            {
+                question: "What do you do when someone steals your toast?",
+                options: [
+                    { key: 'a', text: "Toast them back." },
+                    { key: 'b', text: "Offer jam and befriend them." },
+                    { key: 'c', text: "Cry in a toaster slot." }
+                ],
+                correctKey: 'b'
+            },
+            {
+                question: "Final question: Why do you want this job?",
+                options: [
+                    { key: 'a', text: "I knead the dough." },
+                    { key: 'b', text: "To rise to the occasion." },
+                    { key: 'c', text: "You're the only one who gets me." }
+                ],
+                correctKey: 'c'
+            }
+        ];
+        
+        // Easter egg words
+        const easterEggs = ["butter", "bagel", "jam", "crust", "avocado", "marmalade", "pancake"];
+        
+        // Initialize the game
+        function initGame() {
+            gameState = 'intro';
+            score = 0;
+            specialTrigger = false;
+            specialType = '';
+            outputContainer.innerHTML = '';
+            choicesContainer.innerHTML = '';
+            restartBtn.style.display = 'none';
+            
+            slowPrint("✨ Welcome to the Interview With A Sentient Toaster™ ✨");
+            slowPrint("Type 'help' for game instructions or press Enter to continue.");
+            
+            gameState = 'waitingForIntro';
+        }
+        
+        // Show help information
+        function showHelp() {
+            slowPrint("Welcome to CrumbChronicles!");
+            slowPrint("You are being interviewed by a sentient toaster.");
+            slowPrint("Answer questions wisely and trigger Easter eggs for bonus points!");
+            slowPrint("Type 'butter', 'bagel', 'jam', or 'crust' to unlock special endings.");
+            slowPrint("Good luck, Crumb Aspirant!");
+        }
+        
+        // Slowly print text to simulate typing
+        function slowPrint(text, className = '') {
+            return new Promise(resolve => {
+                const p = document.createElement('p');
+                if (className) p.className = className;
+                outputContainer.appendChild(p);
+                
+                let i = 0;
+                const speed = 30; // milliseconds
+                
+                function typeWriter() {
+                    if (i < text.length) {
+                        p.textContent += text.charAt(i);
+                        i++;
+                        outputContainer.scrollTop = outputContainer.scrollHeight;
+                        setTimeout(typeWriter, speed);
+                    } else {
+                        resolve();
+                    }
+                }
+                
+                typeWriter();
+            });
+        }
+        
+        // Display ASCII art
+        function showAsciiArt(artName) {
+            const art = asciiArt[artName] || '';
+            const div = document.createElement('div');
+            div.className = 'ascii-art';
+            div.textContent = art;
+            outputContainer.appendChild(div);
+            outputContainer.scrollTop = outputContainer.scrollHeight;
+        }
+        
+        // Check for easter eggs
+        function checkEasterEgg(input) {
+            const lowerInput = input.toLowerCase();
+            if (easterEggs.includes(lowerInput)) {
+                specialTrigger = true;
+                specialType = lowerInput;
+                return true;
+            }
+            return false;
+        }
+        
+        // Ask a question with multiple choice options
+        function askQuestion(questionObj) {
+            return new Promise(async (resolve) => {
+                await slowPrint("\n" + questionObj.question);
+                
+                // Create buttons for each option
+                choicesContainer.innerHTML = '';
+                questionObj.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.className = 'choice-btn';
+                    button.textContent = `[${option.key.toUpperCase()}] ${option.text}`;
+                    button.addEventListener('click', () => {
+                        // Display the player's choice in the output
+                        slowPrint(`> ${option.text}`, 'player-message')
+                            .then(() => {
+                                choicesContainer.innerHTML = '';
+                                resolve(option.key);
+                            });
+                    });
+                    choicesContainer.appendChild(button);
+                });
+            });
+        }
+        
+        // Show achievement notification
+        function showAchievement(text) {
+            const div = document.createElement('div');
+            div.className = 'achievement';
+            div.textContent = text;
+            outputContainer.appendChild(div);
+            outputContainer.scrollTop = outputContainer.scrollHeight;
+        }
+        
+        // Handle the game ending
+        async function handleEnding() {
+            await slowPrint(`\n${toasterName} is calculating your results...`);
+            
+            // Simulate processing time
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            let outcome = '';
+            
+            if (specialTrigger) {
+                if (specialType === "butter") {
+                    await slowPrint(`${toasterName}: You said the sacred word... 'butter'.`, 'toast-message');
+                    await slowPrint("A portal opens. You are whisked away to the secret Butter Realm. 🍯");
+                    outcome = "Supreme Spreadmaster (Butter Ending)";
+                    showAsciiArt('butterRealm');
+                } else if (specialType === "bagel") {
+                    await slowPrint(`${toasterName}: You've opened the Bagelverse! All is round now.`, 'toast-message');
+                    outcome = "Bagel King/Queen";
+                    showAsciiArt('bagel');
+                } else if (specialType === "jam") {
+                    await slowPrint(`${toasterName}: You are now the Ambassador of Jam. 🍓`, 'toast-message');
+                    outcome = "Jam Diplomat";
+                    showAsciiArt('toast');
+                } else if (specialType === "crust") {
+                    await slowPrint(`${toasterName}: Crust Council welcomes you, wise one.`, 'toast-message');
+                    outcome = "Crust Council Member";
+                    showAsciiArt('crust');
+                } else if (specialType === "avocado") {
+                    await slowPrint(`${toasterName}: Avocado on toast? How millennial of you!`, 'toast-message');
+                    outcome = "Millennial Toast Master";
+                    showAsciiArt('avocado');
+                } else if (specialType === "marmalade") {
+                    await slowPrint(`${toasterName}: Ah, a connoisseur of the bitter-sweet!`, 'toast-message');
+                    outcome = "Marmalade Maestro";
+                    showAsciiArt('toast');
+                } else if (specialType === "pancake") {
+                    await slowPrint(`${toasterName}: *gasps* You dare mention the forbidden flat bread?`, 'toast-message');
+                    outcome = "Pancake Heretic";
+                    showAsciiArt('pancake');
+                }
+            }
+            else if (score === 3) {
+                await slowPrint(`${toasterName}: Impeccable. You're golden-brown perfection.`, 'toast-message');
+                outcome = "Senior Crumb Strategist";
+                showAsciiArt('goldenToast');
+                showAchievement("Achievement Unlocked: Golden Toast! 🏆");
+            }
+            else if (score === 2) {
+                await slowPrint(`${toasterName}: Not bad, a bit underdone, but acceptable.`, 'toast-message');
+                outcome = "Junior Crumb Collector";
+                showAsciiArt('toast');
+            }
+            else if (score === 1) {
+                await slowPrint(`${toasterName}: Mediocre. You are now on butter-duty. Forever.`, 'toast-message');
+                outcome = "Butter Duty";
+                showAsciiArt('butterRealm');
+            }
+            else {
+                await slowPrint(`${toasterName}: Burnt beyond recognition. Into the Crumb Chasm you go.`, 'toast-message');
+                outcome = "Crisped and Banished";
+                showAsciiArt('crust');
+                if (score === 0) {
+                    showAchievement("Achievement Unlocked: Crust King! 👑");
+                }
+            }
+            
+            await slowPrint("\nThanks for playing, " + playerName + "! 🍽️");
+            
+            // Add result to "leaderboard" in local storage
+            saveToLeaderboard(playerName, outcome);
+            
+            // Show the restart button
+            restartBtn.style.display = 'block';
+        }
+        
+        // Save to Firebase leaderboard
+        function saveToLeaderboard(playerName, outcome) {
+            // Save to local storage as backup
+            let localLeaderboard = JSON.parse(localStorage.getItem('crumbLeaderboard') || '[]');
+            localLeaderboard.push({ name: playerName, outcome: outcome, date: new Date().toLocaleDateString() });
+            localStorage.setItem('crumbLeaderboard', JSON.stringify(localLeaderboard));
+            
+            // Save to Firebase
+            const entry = {
+                name: playerName,
+                outcome: outcome,
+                date: new Date().toISOString(),
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            
+            // Push to the "leaderboard" collection
+            database.ref('leaderboard').push(entry)
+                .then(() => {
+                    console.log("Leaderboard entry saved successfully!");
+                    loadLeaderboard(); // Refresh the leaderboard display
+                })
+                .catch((error) => {
+                    console.error("Error saving leaderboard entry: ", error);
+                });
+        }
+        
+        // Load leaderboard from Firebase
+        function loadLeaderboard() {
+            leaderboardEntries.innerHTML = '<p id="loading-message">Loading the toasty leaderboard...</p>';
+            
+            database.ref('leaderboard')
+                .orderByChild('timestamp')
+                .limitToLast(20) // Get the most recent 20 entries
+                .once('value')
+                .then((snapshot) => {
+                    leaderboardEntries.innerHTML = ''; // Clear loading message
+                    
+                    // If no entries exist yet
+                    if (!snapshot.exists()) {
+                        leaderboardEntries.innerHTML = '<p>No toast legends yet! Be the first to enter the Crumb Chronicles!</p>';
+                        return;
+                    }
+                    
+                    // Store entries in an array to reverse them (newest first)
+                    const entries = [];
+                    snapshot.forEach((childSnapshot) => {
+                        const entry = childSnapshot.val();
+                        entries.push(entry);
+                    });
+                    
+                    // Reverse to show newest first
+                    entries.reverse();
+                    
+                    // Create HTML for each entry
+                    entries.forEach((entry) => {
+                        const entryDate = new Date(entry.date).toLocaleDateString();
+                        const entryElement = document.createElement('div');
+                        entryElement.className = 'leaderboard-entry';
+                        entryElement.innerHTML = `
+                            <span class="entry-name">${escapeHtml(entry.name)}</span>
+                            <span class="entry-outcome">${escapeHtml(entry.outcome)}</span>
+                            <span class="entry-date">${entryDate}</span>
+                        `;
+                        leaderboardEntries.appendChild(entryElement);
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error loading leaderboard: ", error);
+                    leaderboardEntries.innerHTML = '<p>Error loading the leaderboard. The toaster seems to be malfunctioning!</p>';
+                });
+        }
+        
+        // Helper function to escape HTML to prevent XSS
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
+        // Get random toaster name
+        function getRandomToasterName() {
+            return toasterNames[Math.floor(Math.random() * toasterNames.length)];
+        }
+        
+        // Main game flow
+        async function playGame() {
+            // Get player name
+            await slowPrint("Enter your name, Crumb Aspirant: ");
+            gameState = 'askingForName';
+        }
+        
+        // Process user input
+        async function processInput(input) {
+            // Check for help command
+            if (input.toLowerCase() === 'help') {
+                showHelp();
+                return;
+            }
+            
+            // Check for easter eggs (anytime)
+            if (checkEasterEgg(input)) {
+                gameState = 'ending';
+                handleEnding();
+                return;
+            }
+            
+            // Handle different game states
+            switch (gameState) {
+                case 'waitingForIntro':
+                    playGame();
+                    break;
+                    
+                case 'askingForName':
+                    playerName = input || "Anonymous Toast Lover";
+                    slowPrint(`> ${playerName}`, 'player-message');
+                    
+                    // Set up the toaster and start the game
+                    toasterName = getRandomToasterName();
+                    await slowPrint("You enter a room. There's a toaster on a throne made of breadsticks.");
+                    await slowPrint(`Toaster: Greetings, I am ${toasterName}. Let's see if you're worthy of the Crumb Kingdom.`, 'toast-message');
+                    
+                    // First question
+                    gameState = 'question1';
+                    const answer1 = await askQuestion(questions[0]);
+                    if (answer1 === questions[0].correctKey) score++;
+                    
+                    // Second question
+                    gameState = 'question2';
+                    const answer2 = await askQuestion(questions[1]);
+                    if (answer2 === questions[1].correctKey) score++;
+                    
+                    // Third question
+                    gameState = 'question3';
+                    const answer3 = await askQuestion(questions[2]);
+                    if (answer3 === questions[2].correctKey) score++;
+                    
+                    // End the game
+                    gameState = 'ending';
+                    handleEnding();
+                    break;
+                    
+                default:
+                    await slowPrint(`Toaster: I didn't quite catch that, ${playerName}.`, 'toast-message');
+                    break;
+            }
+        }
+        
+        // Event listeners
+        submitBtn.addEventListener('click', () => {
+            const input = userInput.value;
+            userInput.value = '';
+            processInput(input);
+        });
+        
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const input = userInput.value;
+                userInput.value = '';
+                processInput(input);
+            }
+        });
+        
+        helpBtn.addEventListener('click', () => {
+            showHelp();
+        });
+        
+        restartBtn.addEventListener('click', () => {
+            initGame();
+        });
+        
+        // Start the game
+        initGame();
+        
+        // Load the leaderboard
+        loadLeaderboard();
+    </script>
+</body>
+</html>
