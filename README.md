@@ -22,6 +22,17 @@ Will you be crowned as the Senior Crumb Strategist? Banished to eternal Butter D
 - **Achievements**: Unlock special achievements like "Golden Toast" and "Crust King"
 - **Zero Carbs**: Play as much as you want without worrying about your bread intake
 
+## 📁 Project Structure
+```
+crumb-chronicles/
+├── index.html              # Main web game file
+├── README.md               # Project documentation
+└── original-cpp/           # Original C++ implementation
+    ├── CrumbChronicles.cpp # C++ source code
+    ├── CrumbLeaderboard.txt# Sample leaderboard file
+    └── README.md           # C++ version documentation
+```
+
 ## 🎮 How to Play 🎮
 
 1. Visit the [live demo](https://malavikaswapna.github.io/Crumb-Chronicles/)
